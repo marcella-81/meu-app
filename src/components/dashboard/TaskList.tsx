@@ -27,16 +27,18 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
   const supabase = createClient()
 
   async function complete(taskId: string) {
-    const newDone = new Set(done)
-    newDone.add(taskId)
-    setDone(newDone)
-    setTimeout(async () => {
-      await supabase.from('tasks').update({ completed: true }).eq('id', taskId)
-      setList(prev => prev.filter(t => t.id !== taskId))
-      newDone.delete(taskId)
-      setDone(new Set(newDone))
-    }, 600)
-  }
+  setDone(prev => new Set([...prev, taskId]))
+
+  setTimeout(async () => {
+    await supabase.from('tasks').update({ completed: true }).eq('id', taskId)
+    setList(prev => prev.filter(t => t.id !== taskId))
+    setDone(prev => {
+      const next = new Set(prev)
+      next.delete(taskId)
+      return next
+    })
+  }, 600)
+}
 
   async function addTask(e: React.FormEvent) {
     e.preventDefault()

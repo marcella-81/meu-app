@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { TimeBlockList } from '@/components/dashboard/TimeBlockList'
 import { HabitList } from '@/components/dashboard/HabitList'
 import { TaskList } from '@/components/dashboard/TaskList'
+import { CheckIn } from '@/components/dashboard/CheckIn'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -93,6 +94,12 @@ export default async function DashboardPage() {
           </p>
         </div>
       )}
+
+      {/* Check-in IA */}
+      <CheckIn
+        currentBlock={currentBlock ?? null}
+        profile={profile ?? null}
+      />
 
       {/* Time blocks do dia */}
       <div className="mb-6">
