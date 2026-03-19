@@ -37,3 +37,17 @@ export interface Task {
   completed: boolean
   priority: 'low' | 'medium' | 'high'
 }
+
+export interface HabitLog {
+  id: string
+  habit_id: string
+  user_id: string
+  log_date: string
+  completed: boolean
+  completed_at: string | null
+}
+
+export interface TimeBlockWithStatus extends TimeBlock {
+  is_current: boolean
+  is_past: boolean
+}
