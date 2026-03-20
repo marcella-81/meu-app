@@ -1,8 +1,12 @@
-// src/app/(app)/layout.tsx
+import { BottomNav } from '@/components/layout/BottomNav'
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <main className="flex-1">{children}</main>
+    <div className="min-h-screen bg-gray-50">
+      <main className="flex-1 pb-20">
+        {children}
+      </main>
+      <BottomNav />
     </div>
   )
 }
