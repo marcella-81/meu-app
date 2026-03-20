@@ -49,7 +49,7 @@ export function TimeBlockList({ blocks }: { blocks: Block[] }) {
           }`}
         >
           <div className="text-xs text-gray-400 w-20 flex-shrink-0">
-            {block.start_time} — {block.end_time}
+            {block.start_time.slice(0, 5)} — {block.end_time.slice(0, 5)}
           </div>
           <div className="flex-1">
             <p className={`text-sm font-medium ${block.is_past ? 'text-gray-400' : 'text-gray-800'}`}>
