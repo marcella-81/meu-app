@@ -7,6 +7,7 @@ const links = [
   { href: '/rotina', label: 'Rotina', icon: '◷' },
   { href: '/wellness', label: 'Wellness', icon: '♡' },
   { href: '/metas', label: 'Metas', icon: '◎' },
+  { href: '/perfil', label: 'Perfil', icon: '◯' },
 ]
 
 export function BottomNav() {
