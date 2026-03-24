@@ -27,6 +27,18 @@ const links = [
     ),
   },
   {
+    href: '/pendencias',
+    label: 'Pendências',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 4h12M2 8h12M2 12h12"/>
+        <circle cx="5" cy="4" r="1" fill="currentColor"/>
+        <circle cx="5" cy="8" r="1" fill="currentColor"/>
+        <circle cx="5" cy="12" r="1" fill="currentColor"/>
+      </svg>
+    ),
+  },
+  {
     href: '/calendario',
     label: 'Calendário',
     icon: (
