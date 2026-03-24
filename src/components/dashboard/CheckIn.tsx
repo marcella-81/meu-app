@@ -28,11 +28,11 @@ export function CheckIn({ currentBlock, profile }: Props) {
   const [status, setStatus] = useState<'idle' | 'check' | 'answered'>('idle')
 
   useEffect(() => {
-  if (currentBlock && profile) {
-    loadCheckin()
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [currentBlock?.id])
+    if (currentBlock && profile) {
+      loadCheckin()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentBlock?.id])
 
   async function loadCheckin() {
     setLoading(true)
@@ -40,11 +40,7 @@ export function CheckIn({ currentBlock, profile }: Props) {
     const res = await fetch('/api/checkin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        currentBlock,
-        profile,
-        status: 'check',
-      }),
+      body: JSON.stringify({ currentBlock, profile, status: 'check' }),
     })
     const data = await res.json()
     setMessage(data.message)
@@ -57,11 +53,7 @@ export function CheckIn({ currentBlock, profile }: Props) {
     const res = await fetch('/api/checkin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        currentBlock,
-        profile,
-        status: answer,
-      }),
+      body: JSON.stringify({ currentBlock, profile, status: answer }),
     })
     const data = await res.json()
     setMessage(data.message)
@@ -71,33 +63,58 @@ export function CheckIn({ currentBlock, profile }: Props) {
   if (!currentBlock) return null
 
   return (
-    <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 mb-6">
+    <div
+      className="rounded-xl p-4 mb-6 border"
+      style={{
+        background: 'rgba(61,92,58,0.06)',
+        borderColor: 'rgba(61,92,58,0.12)',
+      }}
+    >
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <span style={{ fontSize: 14 }}>✦</span>
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: 'var(--hero)' }}
+        >
+          <span style={{ fontSize: 14, color: 'white' }}>✦</span>
         </div>
         <div className="flex-1">
           {loading ? (
             <div className="flex gap-1 items-center py-1">
-              <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div
+                className="w-1.5 h-1.5 rounded-full animate-bounce"
+                style={{ background: 'var(--accent)', animationDelay: '0ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full animate-bounce"
+                style={{ background: 'var(--accent)', animationDelay: '150ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full animate-bounce"
+                style={{ background: 'var(--accent)', animationDelay: '300ms' }}
+              />
             </div>
           ) : (
-            <p className="text-sm text-violet-900 leading-relaxed">{message}</p>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text)' }}>
+              {message}
+            </p>
           )}
 
           {status === 'check' && !loading && (
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => answer('yes')}
-                className="px-4 py-1.5 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 transition-all"
+                className="px-4 py-1.5 text-sm rounded-lg text-white transition-all"
+                style={{ background: 'var(--hero)' }}
               >
                 Sim, estou
               </button>
               <button
                 onClick={() => answer('no')}
-                className="px-4 py-1.5 border border-violet-300 text-violet-700 text-sm rounded-lg hover:bg-violet-100 transition-all"
+                className="px-4 py-1.5 text-sm rounded-lg transition-all"
+                style={{
+                  border: '1px solid rgba(61,92,58,0.2)',
+                  color: 'var(--hero)',
+                }}
               >
                 Não consegui
               </button>
@@ -107,7 +124,8 @@ export function CheckIn({ currentBlock, profile }: Props) {
           {status === 'answered' && !loading && (
             <button
               onClick={loadCheckin}
-              className="mt-3 text-xs text-violet-500 hover:text-violet-700 underline"
+              className="mt-3 text-xs underline transition-all"
+              style={{ color: 'var(--accent)' }}
             >
               Novo check-in
             </button>

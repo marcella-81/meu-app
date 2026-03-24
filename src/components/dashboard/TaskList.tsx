@@ -100,8 +100,8 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
         />
         <button
           type="submit"
-          className="px-3 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700 transition-all"
-        >
+          className="px-3 py-2 text-white rounded-lg text-sm transition-all"
+          style={{ background: 'var(--hero)' }}>
           Adicionar
         </button>
       </form>
