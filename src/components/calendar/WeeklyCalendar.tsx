@@ -29,7 +29,6 @@ const categoryColors: Record<string, { bg: string; text: string; border: string 
   pendencia: { bg: '#FFE0E0', text: '#8B4747', border: '#FFB3B3' },
 }
 
-
 const weekdays = [
   { label: 'Segunda', value: 1 },
   { label: 'Terça', value: 2 },
@@ -41,6 +40,7 @@ const weekdays = [
 ]
 
 const hours = Array.from({ length: 18 }, (_, i) => i + 6) // 06:00 às 23:00
+
 export function WeeklyCalendar({
   timeBlocks,
   tasks,
@@ -65,7 +65,6 @@ export function WeeklyCalendar({
 
   const weekDays = getWeekDays()
 
-  // Filtrar blocks por dia e hora
   const getBlocksForSlot = (dayValue: number, hour: number) => {
     return timeBlocks.filter((block) => {
       const blockHour = parseInt(block.start_time.split(':')[0])
@@ -73,7 +72,6 @@ export function WeeklyCalendar({
     })
   }
 
-  // Filtrar pendências agendadas por dia e hora
   const getScheduledTasksForSlot = (dayValue: number, hour: number) => {
     return tasks.filter(task => 
       !task.completed && 
@@ -82,14 +80,6 @@ export function WeeklyCalendar({
     )
   }
 
-  // Filtrar pendências SEM horário para o topo do dia (aparecem na primeira hora: 02:00)
-  const getUnscheduledTasksForDay = () => {
-  return tasks.filter(task => 
-    !task.completed && 
-    !task.scheduled_day && 
-    !task.scheduled_hour
-  )
-}
   function previousWeek() {
     setCurrentWeek(new Date(currentWeek.setDate(currentWeek.getDate() - 7)))
   }
@@ -182,75 +172,56 @@ export function WeeklyCalendar({
               {weekdays.map((day) => {
                 const blocks = getBlocksForSlot(day.value, hour)
                 const scheduledTasks = getScheduledTasksForSlot(day.value, hour)
-                const unscheduledTasks = hour === 2 ? getUnscheduledTasksForDay() : [] // Topo do dia
 
                 return (
                   <div
                     key={`${day.value}-${hour}`}
-                    className="p-2 min-h-[60px] border-l flex flex-col gap-1"
+                    className="p-2 min-h-[60px] border-l"
                     style={{
                       borderColor: 'var(--border)',
                       background: selectedDay === day.value ? 'var(--bg)' : 'var(--surface)',
                     }}
                   >
-                    {/* 🔴 Pendências SEM horário (aparecem no topo: 02:00) */}
-                    {hour === 2 && unscheduledTasks.length > 0 && (
-                      <div className="mb-1 space-y-1">
-                        {unscheduledTasks.map(task => (
-                          <div
-                            key={task.id}
-                            className="p-2 rounded-lg text-xs border-2"
-                            style={{
-                              background: categoryColors.pendencia.bg,
-                              borderColor: categoryColors.pendencia.border,
-                              color: categoryColors.pendencia.text,
-                            }}
-                          >
-                            <div className="font-semibold truncate">{task.title}</div>
-                            <div className="opacity-75 text-[10px]">Sem horário • {task.priority}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 🟡 Pendências COM horário (DESTACADAS - aparecem antes dos blocks) */}
-                    {scheduledTasks.map(task => (
-                      <div
-                        key={task.id}
-                        className="p-2 rounded-lg text-xs border-2 shadow-sm"
-                        style={{
-                          background: categoryColors.pendencia.bg,
-                          borderColor: categoryColors.pendencia.border,
-                          color: categoryColors.pendencia.text,
-                        }}
-                      >
-                        <div className="font-semibold truncate">{task.title}</div>
-                        <div className="opacity-75 text-[10px]">{task.scheduled_hour}:00 • Pendência</div>
-                      </div>
-                    ))}
-
-                    {/* ⚪ Time Blocks da Rotina (EM CINZA - menos destaque) */}
-                    {blocks.map((block) => {
-                      const colors = categoryColors[block.category] || categoryColors.rest
-                      return (
+                    <div className="flex flex-col gap-1 min-h-[60px]">
+                      {/* Pendências COM horário (DESTACADAS) */}
+                      {scheduledTasks.map(task => (
                         <div
-                          key={block.id}
-                          className="p-2 rounded-lg text-xs border border-dashed transition-opacity"
+                          key={task.id}
+                          className="p-2 rounded-lg text-xs border-2 shadow-sm"
                           style={{
-                            background: colors.bg,
-                            borderColor: colors.border,
-                            color: colors.text,
-                            opacity: 0.5, // Cinza/menos destaque
-                            filter: 'grayscale(20%)',
+                            background: categoryColors.pendencia.bg,
+                            borderColor: categoryColors.pendencia.border,
+                            color: categoryColors.pendencia.text,
                           }}
                         >
-                          <div className="font-semibold truncate opacity-80">{block.title}</div>
-                          <div className="opacity-60 text-[10px]">
-                            {block.start_time.slice(0, 5)} - {block.end_time.slice(0, 5)}
-                          </div>
+                          <div className="font-semibold truncate">{task.title}</div>
+                          <div className="opacity-75 text-[10px]">{task.scheduled_hour}:00 • Pendência</div>
                         </div>
-                      )
-                    })}
+                      ))}
+
+                      {/* Time Blocks da Rotina (EM CINZA) */}
+                      {blocks.map((block) => {
+                        const colors = categoryColors[block.category] || categoryColors.rest
+                        return (
+                          <div
+                            key={block.id}
+                            className="p-2 rounded-lg text-xs border border-dashed transition-opacity"
+                            style={{
+                              background: colors.bg,
+                              borderColor: colors.border,
+                              color: colors.text,
+                              opacity: 0.7,
+                              filter: 'grayscale(20%)',
+                            }}
+                          >
+                            <div className="font-semibold truncate opacity-80">{block.title}</div>
+                            <div className="opacity-60 text-[10px]">
+                              {block.start_time.slice(0, 5)} - {block.end_time.slice(0, 5)}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )
               })}
