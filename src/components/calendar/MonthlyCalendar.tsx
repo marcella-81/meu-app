@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState } from 'react'  
+import { calculateGoalProgress, formatDaysRemaining } from '@/lib/utils/goal-utils' 
 
 interface Task {
   id: string
@@ -11,6 +12,18 @@ interface Task {
   scheduled_hour?: number | null
 }
 
+interface Goal {
+  id: string
+  title: string
+  description?: string
+  category: string
+  status?: string
+  completed?: boolean
+  start_date?: string
+  created_at: string
+  target_date: string
+}
+
 const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
   pendencia: { bg: '#FFE0E0', text: '#8B4747', border: '#FFB3B3' },
 }
@@ -19,8 +32,10 @@ const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
 export function MonthlyCalendar({
   tasks,
+  goals,
 }: {
   tasks: Task[]
+  goals: Goal[]
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -56,6 +71,20 @@ export function MonthlyCalendar({
                day.getFullYear() === currentMonth.getFullYear()
       }
       return false
+    })
+  }
+
+  const getGoalsForDay = (day: Date) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    return goals.filter(goal => {
+      if (goal.status === 'completed' || goal.completed === true) return false
+      
+      const start = new Date(goal.start_date || goal.created_at)
+      const end = new Date(goal.target_date)
+      
+      return day >= start && day <= end
     })
   }
 
@@ -181,6 +210,21 @@ export function MonthlyCalendar({
                   </div>
                 )}
 
+                {/* Contador de metas ativas */}
+                {getGoalsForDay(day).length > 0 && (
+                  <div className="mb-1">
+                    <div
+                      className="text-xs px-1.5 py-0.5 rounded-full inline-block"
+                      style={{
+                        background: today ? 'rgba(255,255,255,0.2)' : '#E0E7FF',
+                        color: today ? 'white' : '#4338CA',
+                      }}
+                    >
+                      🎯 {getGoalsForDay(day).length} meta{getGoalsForDay(day).length > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                )}
+
                 {/* Preview das pendências (máximo 3) */}
                 <div className="space-y-0.5 mt-1">
                   {dayTasks.slice(0, 3).map(task => (
@@ -196,6 +240,29 @@ export function MonthlyCalendar({
                       {task.scheduled_hour ? `${task.scheduled_hour}:00 ` : ''}{task.title}
                     </div>
                   ))}
+                  {getGoalsForDay(day).slice(0, 2).map(goal => {
+                    const goalCategory = categoryColors[goal.category] || categoryColors.personal
+                    const progress = calculateGoalProgress(
+                      goal.start_date || goal.created_at,
+                      goal.target_date || new Date().toISOString(),
+                      []
+                    )
+                    return (
+                      <a
+                        key={goal.id}
+                        href="/metas"
+                        className="text-[10px] px-1.5 py-0.5 rounded truncate block hover:opacity-80 transition-opacity"
+                        style={{
+                          background: `${goalCategory.bg}60`,
+                          border: `1px solid ${goalCategory.border}`,
+                          color: goalCategory.text,
+                        }}
+                      >
+                        🎯 {goal.title} ({progress.progress}%)
+                      </a>
+                    )
+                  })}
+
                   {dayTasks.length > 3 && (
                     <div className="text-[10px] px-1.5 py-0.5" style={{ color: 'var(--text3)' }}>
                       +{dayTasks.length - 3} mais
@@ -268,6 +335,75 @@ export function MonthlyCalendar({
           </div>
         </div>
       )}
+
+      {/* Metas Ativas do Dia */}
+          {selectedDate && getGoalsForDay(selectedDate).length > 0 && (
+            <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--border)' }}>
+              <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text2)' }}>
+                🎯 Metas Ativas
+              </h4>
+              <div className="space-y-2">
+                {getGoalsForDay(selectedDate).map(goal => {
+                  // Cores da categoria da meta
+                  const goalCategoryColors: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+                    personal: { bg: '#FCE7F3', text: '#EC4899', border: '#F9A8D4', icon: '👤' },
+                    career: { bg: '#DBEAFE', text: '#3B82F6', border: '#93C5FD', icon: '💼' },
+                    health: { bg: '#D1FAE5', text: '#10B981', border: '#6EE7B7', icon: '💚' },
+                    study: { bg: '#EDE9FE', text: '#8B5CF6', border: '#C4B5FD', icon: '📚' },
+                    finance: { bg: '#FEF3C7', text: '#F59E0B', border: '#FCD34D', icon: '💰' },
+                    relationships: { bg: '#FEE2E2', text: '#EF4444', border: '#FCA5A5', icon: '❤️' },
+                  }
+                  const goalCategory = goalCategoryColors[goal.category] || goalCategoryColors.personal
+                  
+                  // Calcular progresso
+                  const progress = calculateGoalProgress(
+                    goal.start_date || goal.created_at,
+                    goal.target_date || new Date().toISOString(),
+                    []
+                  )
+
+                  return (
+                    <a
+                      key={goal.id}
+                      href="/metas"
+                      className="block p-3 rounded-xl border-2 transition-all hover:shadow-md hover:scale-[1.02]"
+                      style={{
+                        background: goalCategory.bg,
+                        borderColor: goalCategory.border,
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate" style={{ color: goalCategory.text }}>
+                            {goal.title}
+                          </p>
+                          <p className="text-xs mt-1 opacity-75" style={{ color: goalCategory.text }}>
+                            📊 {progress.progress}% • {formatDaysRemaining(progress.remainingDays)}
+                          </p>
+                          {goal.description && (
+                            <p className="text-xs mt-1 line-clamp-1 opacity-60" style={{ color: goalCategory.text }}>
+                              {goal.description}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-xl flex-shrink-0">{goalCategory.icon}</span>
+                      </div>
+                      {/* Mini barra de progresso */}
+                      <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
+                        <div 
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${progress.progress}%`,
+                            background: goalCategory.text 
+                          }}
+                        />
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
       {/* Legenda */}
       <div className="flex gap-4 flex-wrap">

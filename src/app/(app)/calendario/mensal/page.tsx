@@ -21,6 +21,12 @@ export default async function CalendarioMensalPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
+  const { data: goals } = await supabase
+    .from('goals')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -57,6 +63,7 @@ export default async function CalendarioMensalPage() {
       <MonthlyCalendar 
         timeBlocks={timeBlocks ?? []} 
         tasks={tasks ?? []} 
+        goals={goals ?? []}
       />
     </div>
   )

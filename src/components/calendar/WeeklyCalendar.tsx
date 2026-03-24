@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { calculateGoalProgress, formatDaysRemaining } from '@/lib/utils/goal-utils' 
 
 interface TimeBlock {
   id: string
@@ -18,6 +19,17 @@ interface Task {
   completed: boolean
   scheduled_day?: number | null
   scheduled_hour?: number | null
+}
+
+interface Goal {
+  id: string
+  title: string
+  category: string
+  status?: string
+  completed?: boolean
+  start_date?: string
+  created_at: string
+  target_date: string
 }
 
 const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
@@ -44,9 +56,11 @@ const hours = Array.from({ length: 18 }, (_, i) => i + 6) // 06:00 às 23:00
 export function WeeklyCalendar({
   timeBlocks,
   tasks,
+  goals,
 }: {
   timeBlocks: TimeBlock[]
   tasks: Task[]
+  goals: Goal[]
 }) {
   const [currentWeek, setCurrentWeek] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState(new Date().getDay())
@@ -78,6 +92,24 @@ export function WeeklyCalendar({
       task.scheduled_day === dayValue && 
       task.scheduled_hour === hour
     )
+  }
+
+  const getGoalsForDay = (dayValue: number) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    return goals.filter(goal => {
+      if (goal.status === 'completed' || goal.completed === true) return false
+      
+      const start = new Date(goal.start_date || goal.created_at)
+      const end = new Date(goal.target_date)
+      
+      // Verificar se o dia atual está dentro do período da meta
+      const dayDate = new Date()
+      dayDate.setDate(today.getDate() - today.getDay() + dayValue)
+      
+      return dayDate >= start && dayDate <= end
+    })
   }
 
   function previousWeek() {
@@ -199,28 +231,69 @@ export function WeeklyCalendar({
                         </div>
                       ))}
 
-                      {/* Time Blocks da Rotina (EM CINZA) */}
-                      {blocks.map((block) => {
-                        const colors = categoryColors[block.category] || categoryColors.rest
-                        return (
-                          <div
-                            key={block.id}
-                            className="p-2 rounded-lg text-xs border border-dashed transition-opacity"
-                            style={{
-                              background: colors.bg,
-                              borderColor: colors.border,
-                              color: colors.text,
-                              opacity: 0.7,
-                              filter: 'grayscale(20%)',
-                            }}
-                          >
-                            <div className="font-semibold truncate opacity-80">{block.title}</div>
-                            <div className="opacity-60 text-[10px]">
-                              {block.start_time.slice(0, 5)} - {block.end_time.slice(0, 5)}
-                            </div>
-                          </div>
-                        )
-                      })}
+    {/* Time Blocks da Rotina (EM CINZA) */}
+    {blocks.map((block) => {
+      const colors = categoryColors[block.category] || categoryColors.rest
+      return (
+        <div
+          key={block.id}
+          className="p-2 rounded-lg text-xs border border-dashed transition-opacity"
+          style={{
+            background: colors.bg,
+            borderColor: colors.border,
+            color: colors.text,
+            opacity: 0.7,
+            filter: 'grayscale(20%)',
+          }}
+        >
+          <div className="font-semibold truncate opacity-80">{block.title}</div>
+          <div className="opacity-60 text-[10px]">
+            {block.start_time.slice(0, 5)} - {block.end_time.slice(0, 5)}
+          </div>
+        </div>
+      )
+    })}
+
+    {/* Metas Ativas do Dia (aparecem apenas na primeira hora: 06:00) */}
+    {hour === 6 && getGoalsForDay(day.value).length > 0 && (
+      <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+        <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text3)' }}>
+          🎯 Metas Ativas
+        </p>
+        <div className="space-y-1">
+          {getGoalsForDay(day.value).slice(0, 2).map(goal => {
+            const goalCategory = categoryColors[goal.category] || categoryColors.personal
+            const progress = calculateGoalProgress(
+              goal.start_date || goal.created_at,
+              goal.target_date || new Date().toISOString(),
+              []
+            )
+            return (
+              <a
+                key={goal.id}
+                href="/metas"
+                className="block p-1.5 rounded text-[10px] hover:opacity-80 transition-opacity"
+                style={{
+                  background: `${goalCategory.bg}60`,
+                  border: `1px solid ${goalCategory.border}`,
+                  color: goalCategory.text,
+                }}
+              >
+                <div className="font-semibold truncate">{goal.title}</div>
+                <div className="opacity-75 text-[9px]">
+                  {progress.progress}% • {formatDaysRemaining(progress.remainingDays)}
+                </div>
+              </a>
+            )
+          })}
+          {getGoalsForDay(day.value).length > 2 && (
+            <div className="text-[9px]" style={{ color: 'var(--text3)' }}>
+              +{getGoalsForDay(day.value).length - 2} mais
+            </div>
+          )}
+        </div>
+      </div>
+    )}
                     </div>
                   </div>
                 )
