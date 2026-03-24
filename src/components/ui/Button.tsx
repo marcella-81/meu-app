@@ -14,8 +14,8 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-violet-600 text-white hover:bg-violet-700',
-    secondary: 'border border-violet-600 text-violet-600 hover:bg-violet-50',
+    primary: 'rgba(61,92,58,0.2)',
+    secondary: 'bg-green-500 text-white hover:bg-green-600',
     ghost: 'text-gray-600 hover:bg-gray-100',
   }
   return (

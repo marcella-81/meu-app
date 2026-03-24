@@ -15,10 +15,14 @@ export default async function RotinaPage() {
     .order('start_time')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Rotina</h1>
-        <p className="text-sm text-gray-500 mt-1">Sua semana organizada</p>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+          Planejamento
+        </h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>
+          Sua rotina base da semana
+        </p>
       </div>
       <WeekView blocks={timeBlocks ?? []} userId={user.id} />
     </div>
