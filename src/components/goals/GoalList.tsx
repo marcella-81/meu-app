@@ -1,210 +1,194 @@
 'use client'
+
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { GoalCard } from './GoalCard'
+import { AddGoalModal } from './AddGoalModal'
 
 interface Goal {
   id: string
   title: string
-  description: string | null
+  description?: string
   category: string
-  target_date: string | null
+  status: 'active' | 'completed' | 'paused'
+  priority: 'high' | 'medium' | 'low'
+  target_date?: string
   progress: number
-  completed: boolean
+  created_at: string
+  user_id: string
 }
 
-const categoryColors: Record<string, string> = {
-  carreira:       'bg-blue-100 text-blue-700',
-  estudos:        'bg-purple-100 text-purple-700',
-  saude:          'bg-green-100 text-green-700',
-  financas:       'bg-amber-100 text-amber-700',
-  relacionamentos:'bg-pink-100 text-pink-700',
-  criatividade:   'bg-orange-100 text-orange-700',
-}
+const categories = [
+  { value: 'personal', label: 'Pessoal', icon: '👤', color: '#EC4899' },
+  { value: 'career', label: 'Carreira', icon: '💼', color: '#3B82F6' },
+  { value: 'health', label: 'Saúde', icon: '💚', color: '#10B981' },
+  { value: 'study', label: 'Estudos', icon: '📚', color: '#8B5CF6' },
+  { value: 'finance', label: 'Finanças', icon: '💰', color: '#F59E0B' },
+  { value: 'relationships', label: 'Relacionamentos', icon: '❤️', color: '#EF4444' },
+]
 
 export function GoalList({ goals, userId }: { goals: Goal[], userId: string }) {
-  const [list, setList] = useState(goals)
-  const [showForm, setShowForm] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('carreira')
-  const [targetDate, setTargetDate] = useState('')
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const [showModal, setShowModal] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
-  async function addGoal(e: React.FormEvent) {
-    e.preventDefault()
-    if (!title.trim()) return
-    setLoading(true)
+  const filteredGoals = goals.filter(goal => {
+  const isCompleted = goal.status === 'completed'
+  
+  if (filter === 'active' && isCompleted) return false
+  if (filter === 'completed' && !isCompleted) return false
+  if (categoryFilter !== 'all' && goal.category !== categoryFilter) return false
+  return true
+})
 
-    const { data } = await supabase
-      .from('goals')
-      .insert({
-        user_id: userId,
-        title: title.trim(),
-        description: description.trim() || null,
-        category,
-        target_date: targetDate || null,
-        progress: 0,
-      })
-      .select()
-      .single()
-
-    if (data) setList(prev => [data, ...prev])
-    setTitle('')
-    setDescription('')
-    setTargetDate('')
-    setShowForm(false)
-    setLoading(false)
-  }
-
-  async function updateProgress(goalId: string, progress: number) {
-    await supabase
-      .from('goals')
-      .update({ progress, completed: progress === 100 })
-      .eq('id', goalId)
-
-    setList(prev => prev.map(g =>
-      g.id === goalId ? { ...g, progress, completed: progress === 100 } : g
-    ))
-  }
-
-  async function deleteGoal(goalId: string) {
-    await supabase.from('goals').delete().eq('id', goalId)
-    setList(prev => prev.filter(g => g.id !== goalId))
-  }
+  const activeGoals = filteredGoals.filter(g => g.status === 'active')
+  const completedGoals = filteredGoals.filter(g => g.status === 'completed')
 
   return (
-    <div className="flex flex-col gap-4">
-
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-violet-300 hover:text-violet-500 transition-all"
-      >
-        + Nova meta
-      </button>
-
-      {showForm && (
-        <form onSubmit={addGoal} className="bg-white border border-gray-100 rounded-xl p-4 flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="Qual é sua meta?"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-            required
-          />
-          <textarea
-            placeholder="Descrição (opcional)"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            rows={2}
-            className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500 resize-none"
-          />
-          <div className="flex gap-2">
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-            >
-              <option value="carreira">Carreira</option>
-              <option value="estudos">Estudos</option>
-              <option value="saude">Saúde</option>
-              <option value="financas">Finanças</option>
-              <option value="relacionamentos">Relacionamentos</option>
-              <option value="criatividade">Criatividade</option>
-            </select>
-            <input
-              type="date"
-              value={targetDate}
-              onChange={e => setTargetDate(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700 transition-all disabled:opacity-50"
-            >
-              {loading ? 'Salvando...' : 'Salvar meta'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-500 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      )}
-
-      {list.length === 0 && !showForm && (
-        <div className="text-center py-12 text-gray-400 text-sm">
-          Nenhuma meta ainda. Que tal criar a primeira?
+    <div className="space-y-8">
+      {/* Filtros e Botão de Adicionar */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              filter === 'all' ? 'ring-2 ring-[var(--hero)]' : ''
+            }`}
+            style={{ 
+              background: filter === 'all' ? 'var(--hero)' : 'var(--surface)',
+              color: filter === 'all' ? 'white' : 'var(--text2)',
+              border: '1px solid var(--border)'
+            }}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setFilter('active')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              filter === 'active' ? 'ring-2 ring-[var(--hero)]' : ''
+            }`}
+            style={{ 
+              background: filter === 'active' ? 'var(--hero)' : 'var(--surface)',
+              color: filter === 'active' ? 'white' : 'var(--text2)',
+              border: '1px solid var(--border)'
+            }}
+          >
+            Em Andamento
+          </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              filter === 'completed' ? 'ring-2 ring-[var(--hero)]' : ''
+            }`}
+            style={{ 
+              background: filter === 'completed' ? 'var(--hero)' : 'var(--surface)',
+              color: filter === 'completed' ? 'white' : 'var(--text2)',
+              border: '1px solid var(--border)'
+            }}
+          >
+            ✅ Concluídas
+          </button>
         </div>
-      )}
 
-      {list.map(goal => (
-        <div
-          key={goal.id}
-          className={`bg-white border rounded-xl p-4 transition-all ${
-            goal.completed ? 'border-green-200 opacity-75' : 'border-gray-100'
-          }`}
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-6 py-3 rounded-xl text-sm font-medium text-white transition-all hover:shadow-lg"
+          style={{ background: 'var(--hero)' }}
         >
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${categoryColors[goal.category] ?? 'bg-gray-100 text-gray-600'}`}>
-                  {goal.category}
-                </span>
-                {goal.target_date && (
-                  <span className="text-xs text-gray-400">
-                    até {new Date(goal.target_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                  </span>
-                )}
-                {goal.completed && (
-                  <span className="text-xs text-green-600 font-medium">Concluída!</span>
-                )}
-              </div>
-              <p className={`text-sm font-medium ${goal.completed ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                {goal.title}
-              </p>
-              {goal.description && (
-                <p className="text-xs text-gray-400 mt-0.5">{goal.description}</p>
-              )}
-            </div>
-            <button
-              onClick={() => deleteGoal(goal.id)}
-              className="text-gray-300 hover:text-red-400 transition-all text-lg leading-none"
-            >
-              ×
-            </button>
-          </div>
+          Nova Meta
+        </button>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  goal.completed ? 'bg-green-500' : 'bg-violet-500'
-                }`}
-                style={{ width: `${goal.progress}%` }}
-              />
-            </div>
-            <span className="text-xs text-gray-400 w-8 text-right">{goal.progress}%</span>
-          </div>
+      {/* Filtro por Categoria */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setCategoryFilter('all')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            categoryFilter === 'all' ? 'ring-2 ring-[var(--hero)]' : ''
+          }`}
+          style={{ 
+            background: categoryFilter === 'all' ? 'var(--hero)' : 'var(--bg)',
+            color: categoryFilter === 'all' ? 'white' : 'var(--text2)',
+          }}
+        >
+          Todas
+        </button>
+        {categories.map(cat => (
+          <button
+            key={cat.value}
+            onClick={() => setCategoryFilter(cat.value)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1 ${
+              categoryFilter === cat.value ? 'ring-2 ring-[var(--hero)]' : ''
+            }`}
+            style={{ 
+              background: categoryFilter === cat.value ? cat.color : 'var(--bg)',
+              color: categoryFilter === cat.value ? 'white' : 'var(--text2)',
+            }}
+          >
+            {cat.icon} {cat.label}
+          </button>
+        ))}
+      </div>
 
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="10"
-            value={goal.progress}
-            onChange={e => updateProgress(goal.id, Number(e.target.value))}
-            className="w-full mt-2"
-          />
+      {/* Metas em Andamento */}
+      {activeGoals.length > 0 && (
+        <div>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
+            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            Em Andamento ({activeGoals.length})
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeGoals.map(goal => (
+              <GoalCard key={goal.id} goal={goal} />
+                        ))}
+          </div>
         </div>
-      ))}
+      )}
+
+      {/* Metas Concluídas */}
+      {completedGoals.length > 0 && (
+        <div>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text3)' }}>
+            <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+            Concluídas ({completedGoals.length})
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-75">
+            {completedGoals.map(goal => (
+              <GoalCard key={goal.id} goal={goal} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Nenhuma meta */}
+      {filteredGoals.length === 0 && (
+        <div 
+          className="text-center py-16 rounded-2xl"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          <div className="text-6xl mb-4"></div>
+          <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text)' }}>
+            Nenhuma meta encontrada
+          </h3>
+          <p className="text-sm mb-6" style={{ color: 'var(--text3)' }}>
+            Comece definindo seu primeiro objetivo!
+          </p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-6 py-3 rounded-xl text-sm font-medium text-white transition-all"
+            style={{ background: 'var(--hero)' }}
+          >
+            + Criar Primeira Meta
+          </button>
+        </div>
+      )}
+
+      {/* Modal de Adicionar Meta */}
+      <AddGoalModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        userId={userId}
+        categories={categories}
+      />
     </div>
   )
 }
