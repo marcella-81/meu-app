@@ -61,7 +61,6 @@ export default async function CalendarioMensalPage() {
 
       {/* Calendário Mensal */}
       <MonthlyCalendar 
-        timeBlocks={timeBlocks ?? []} 
         tasks={tasks ?? []} 
         goals={goals ?? []}
       />

@@ -8,8 +8,8 @@ interface Task {
   title: string
   priority: string
   completed: boolean
-  scheduled_day?: number | null // 0-6 (Domingo-Sábado)
-  scheduled_hour?: number | null // 2-23
+  scheduled_day?: number | null
+  scheduled_hour?: number | null
 }
 
 const priorityColors: Record<string, string> = {
@@ -34,7 +34,7 @@ const weekdays = [
   { value: 6, label: 'Sáb' },
 ]
 
-const hours = Array.from({ length: 22 }, (_, i) => i + 2) // 02:00 às 23:00
+const hours = Array.from({ length: 22 }, (_, i) => i + 2)
 
 export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
   const [done, setDone] = useState<Set<string>>(new Set())
@@ -47,7 +47,6 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
 
   async function complete(taskId: string) {
     setDone(prev => new Set([...prev, taskId]))
-
     setTimeout(async () => {
       await supabase.from('tasks').update({ completed: true }).eq('id', taskId)
       setList(prev => prev.filter(t => t.id !== taskId))
@@ -62,18 +61,11 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
   async function addTask(e: React.FormEvent) {
     e.preventDefault()
     if (!newTask.trim()) return
-
     const { data } = await supabase
       .from('tasks')
-      .insert({ 
-        title: newTask.trim(), 
-        user_id: userId, 
-        priority: 'medium',
-        completed: false 
-      })
+      .insert({ title: newTask.trim(), user_id: userId, priority: 'medium', completed: false })
       .select()
       .single()
-
     if (data) setList(prev => [data, ...prev])
     setNewTask('')
   }
@@ -81,34 +73,22 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
   async function scheduleTask(taskId: string, day: number, hour: number) {
     const { data } = await supabase
       .from('tasks')
-      .update({ 
-        scheduled_day: day,
-        scheduled_hour: hour 
-      })
+      .update({ scheduled_day: day, scheduled_hour: hour })
       .eq('id', taskId)
       .select()
       .single()
-
-    if (data) {
-      setList(prev => prev.map(t => t.id === taskId ? data : t))
-    }
+    if (data) setList(prev => prev.map(t => t.id === taskId ? data : t))
     setSchedulingTaskId(null)
   }
 
   async function unScheduleTask(taskId: string) {
     const { data } = await supabase
       .from('tasks')
-      .update({ 
-        scheduled_day: null,
-        scheduled_hour: null 
-      })
+      .update({ scheduled_day: null, scheduled_hour: null })
       .eq('id', taskId)
       .select()
       .single()
-
-    if (data) {
-      setList(prev => prev.map(t => t.id === taskId ? data : t))
-    }
+    if (data) setList(prev => prev.map(t => t.id === taskId ? data : t))
   }
 
   const unscheduledTasks = list.filter(t => !t.scheduled_day && !t.completed)
@@ -116,7 +96,8 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Tasks Agendadas */}
+      
+      {/* ✅ Tasks Agendadas */}
       {scheduledTasks.length > 0 && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text3)' }}>
@@ -127,7 +108,7 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
               <button
                 key={task.id}
                 onClick={() => complete(task.id)}
-                className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all w-full ${
                   done.has(task.id)
                     ? 'border-green-200 bg-green-50 opacity-60'
                     : 'border-[var(--accent)] bg-[#F0F7F0]'
@@ -142,30 +123,32 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
                     </svg>
                   )}
                 </div>
-                <div className="flex-1">
-                  <span className={`text-sm block ${done.has(task.id) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-sm block truncate ${done.has(task.id) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
                     {task.title}
                   </span>
                   <span className="text-xs" style={{ color: 'var(--text3)' }}>
                     {weekdays.find(d => d.value === task.scheduled_day)?.label} às {task.scheduled_hour}:00
                   </span>
                 </div>
-                <button
+                
+                {/* ✅ CORREÇÃO: span no lugar de button (evita botão aninhado) */}
+                <span
                   onClick={(e) => {
                     e.stopPropagation()
                     unScheduleTask(task.id)
                   }}
-                  className="text-xs px-2 py-1 rounded hover:bg-red-50 text-red-600"
+                  className="text-xs px-2 py-1 rounded hover:bg-red-50 text-red-600 cursor-pointer flex-shrink-0"
                 >
                   ×
-                </button>
+                </span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Tasks Não Agendadas */}
+      {/* ✅ Tasks Não Agendadas */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text3)' }}>
           Pendências {unscheduledTasks.length > 0 && `(${unscheduledTasks.length})`}
@@ -186,7 +169,7 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
                   </svg>
                 )}
               </button>
-              <span className="text-sm flex-1 text-gray-800">
+              <span className="text-sm flex-1 text-gray-800 truncate">
                 {task.title}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${priorityColors[task.priority] ?? 'bg-gray-100 text-gray-500'}`}>
@@ -195,7 +178,7 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
               
               {/* Botão de agendar */}
               {schedulingTaskId === task.id ? (
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-shrink-0">
                   <select
                     value={selectedDay}
                     onChange={(e) => setSelectedDay(Number(e.target.value))}
@@ -233,7 +216,7 @@ export function TaskList({ tasks, userId }: { tasks: Task[], userId: string }) {
               ) : (
                 <button
                   onClick={() => setSchedulingTaskId(task.id)}
-                  className="text-xs px-2 py-1 rounded hover:bg-blue-50 text-blue-600"
+                  className="text-xs px-2 py-1 rounded hover:bg-blue-50 text-blue-600 flex-shrink-0"
                   title="Agendar"
                 >
                   📅

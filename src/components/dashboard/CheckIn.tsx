@@ -28,7 +28,7 @@ export function CheckIn({ currentBlock, profile }: Props) {
   const [status, setStatus] = useState<'idle' | 'check' | 'answered'>('idle')
 
   useEffect(() => {
-    if (currentBlock && profile) {
+    if (profile) {
       loadCheckin()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,30 +37,36 @@ export function CheckIn({ currentBlock, profile }: Props) {
   async function loadCheckin() {
     setLoading(true)
     setStatus('check')
-    const res = await fetch('/api/checkin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentBlock, profile, status: 'check' }),
-    })
-    const data = await res.json()
-    setMessage(data.message)
+    try {
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentBlock, profile, status: 'check' }),
+      })
+      const data = await res.json()
+      setMessage(data.message)
+    } catch {
+      setMessage('Não consegui carregar o check-in agora. Tente novamente.')
+    }
     setLoading(false)
   }
 
   async function answer(answer: 'yes' | 'no') {
     setLoading(true)
     setStatus('answered')
-    const res = await fetch('/api/checkin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentBlock, profile, status: answer }),
-    })
-    const data = await res.json()
-    setMessage(data.message)
+    try {
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentBlock, profile, status: answer }),
+      })
+      const data = await res.json()
+      setMessage(data.message)
+    } catch {
+      setMessage('Erro ao processar resposta.')
+    }
     setLoading(false)
   }
-
-  if (!currentBlock) return null
 
   return (
     <div
@@ -79,23 +85,14 @@ export function CheckIn({ currentBlock, profile }: Props) {
         </div>
         <div className="flex-1">
           {loading ? (
-            <div className="flex gap-1 items-center py-1">
-              <div
-                className="w-1.5 h-1.5 rounded-full animate-bounce"
-                style={{ background: 'var(--accent)', animationDelay: '0ms' }}
-              />
-              <div
-                className="w-1.5 h-1.5 rounded-full animate-bounce"
-                style={{ background: 'var(--accent)', animationDelay: '150ms' }}
-              />
-              <div
-                className="w-1.5 h-1.5 rounded-full animate-bounce"
-                style={{ background: 'var(--accent)', animationDelay: '300ms' }}
-              />
+            <div className="flex gap-1 items-center py-2">
+              <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent)', animationDelay: '0ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent)', animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--accent)', animationDelay: '300ms' }} />
             </div>
           ) : (
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text)' }}>
-              {message}
+              {message || 'Carregando check-in...'}
             </p>
           )}
 
@@ -111,10 +108,7 @@ export function CheckIn({ currentBlock, profile }: Props) {
               <button
                 onClick={() => answer('no')}
                 className="px-4 py-1.5 text-sm rounded-lg transition-all"
-                style={{
-                  border: '1px solid rgba(61,92,58,0.2)',
-                  color: 'var(--hero)',
-                }}
+                style={{ border: '1px solid rgba(61,92,58,0.2)', color: 'var(--hero)' }}
               >
                 Não consegui
               </button>

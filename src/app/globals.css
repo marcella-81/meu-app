@@ -23,3 +23,17 @@ input, textarea, select {
   color: var(--text);
   background-color: var(--surface);
 }
+
+/* Para o span com role="button" ter feedback visual */
+span[role="button"]:focus {
+  outline: 2px solid var(--hero);
+  outline-offset: 2px;
+}
+
+span[role="button"]:hover {
+  background-color: #fee2e2; /* red-50 */
+}
+
+span[role="button"]:active {
+  transform: scale(0.95);
+}
