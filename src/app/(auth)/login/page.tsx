@@ -72,7 +72,7 @@ export default function LoginPage() {
 
       <p className="text-sm text-center text-gray-500">
         Não tem conta?{' '}
-        <Link href="/cadastro" className="text-violet-600 hover:underline">
+        <Link href="/cadastro" className="text-green-600 hover:underline">
           Criar conta
         </Link>
       </p>
