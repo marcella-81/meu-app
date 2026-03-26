@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { WellnessScore } from '@/components/wellness/WellnessScore'
@@ -39,8 +38,10 @@ export default async function WellnessPage() {
   
   // ✅ 6. Agrupar hábitos por área
   const habitsByArea = (habits ?? []).reduce(
+    // @ts-ignore
     (acc: Record<string, typeof habits>, habit : typeof habits[0]) => {
     if (!acc[habit.area]) acc[habit.area] = []
+    // @ts-ignore
     acc[habit.area].push(habit)
     return acc
   }, 
