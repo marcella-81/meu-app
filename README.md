@@ -18,7 +18,7 @@ Essa é uma aplicação web desenvolvida com Next.js e integração com Supabase
 
 ## Deploy
 
-🔗 https://seu-app.vercel.app
+🔗 meu-on7zkfr20-marcellacagliari81-gmailcoms-projects.vercel.app
 
 
 ## Como rodar o projeto:
