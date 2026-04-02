@@ -27,20 +27,16 @@ interface StepProps {
   update: (field: string, value: unknown) => void
 }
 
-// ✅ Componente auxiliar: Seletor de Hábitos (fora do componente principal)
-function HabitSelector({ 
-  area, 
-  currentHabits, 
-  onUpdate,
-  suggestions 
-}: { 
+function HabitSelector({
+  area, currentHabits, onUpdate, suggestions
+}: {
   area: string
   currentHabits: string[]
   onUpdate: (habits: string[]) => void
   suggestions: string[]
 }) {
   const [customInput, setCustomInput] = useState('')
-  
+
   const areaIcons: Record<string, string> = {
     physical: '💪', mental: '🧠', diet: '🥗', hobby: '🎨',
   }
@@ -50,7 +46,7 @@ function HabitSelector({
 
   function toggleHabit(habit: string) {
     const newHabits = currentHabits.includes(habit)
-      ? currentHabits.filter((h: string) => h !== habit)
+      ? currentHabits.filter(h => h !== habit)
       : [...currentHabits, habit]
     onUpdate(newHabits)
   }
@@ -67,50 +63,41 @@ function HabitSelector({
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{areaIcons[area]}</span>
         <div>
-          <h3 className="font-medium text-gray-900">{areaLabels[area]}</h3>
-          <p className="text-xs text-gray-500">
-            {currentHabits.length}/3 hábitos selecionados
-          </p>
+          <h3 className="font-medium" style={{ color: 'var(--text)' }}>{areaLabels[area]}</h3>
+          <p className="text-xs" style={{ color: 'var(--text3)' }}>{currentHabits.length}/3 hábitos selecionados</p>
         </div>
       </div>
 
-      {/* Sugestões */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {suggestions.map((habit: string) => (
+        {suggestions.map(habit => (
           <button
             key={habit}
             onClick={() => toggleHabit(habit)}
-            className={`px-3 py-1.5 rounded-full text-xs transition-all ${
-              currentHabits.includes(habit)
-                ? 'bg-green-100 text-green-800 border-green-300'
-                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-            } border`}
+            className="px-3 py-1.5 rounded-full text-xs transition-all border"
+            style={currentHabits.includes(habit)
+              ? { background: 'rgba(61,92,58,0.1)', color: 'var(--hero)', borderColor: 'var(--accent)' }
+              : { background: 'var(--bg)', color: 'var(--text2)', borderColor: 'var(--border)' }
+            }
           >
             {habit}
           </button>
         ))}
       </div>
 
-      {/* Input custom */}
       <div className="flex gap-2">
         <input
           type="text"
-          placeholder="Ou adicione um hábito personalizado..."
+          placeholder="Adicione um hábito personalizado..."
           value={customInput}
-          onChange={(e) => setCustomInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              addCustomHabit(customInput)
-              setCustomInput('')
-            }
+          onChange={e => setCustomInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { addCustomHabit(customInput); setCustomInput('') }
           }}
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
+          className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+          style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
         />
         <button
-          onClick={() => {
-            addCustomHabit(customInput)
-            setCustomInput('')
-          }}
+          onClick={() => { addCustomHabit(customInput); setCustomInput('') }}
           className="px-4 py-2 rounded-lg text-sm font-medium text-white"
           style={{ background: 'var(--hero)' }}
         >
@@ -118,21 +105,13 @@ function HabitSelector({
         </button>
       </div>
 
-      {/* Hábitos selecionados */}
       {currentHabits.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {currentHabits.map((habit: string) => (
-            <span
-              key={habit}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800"
-            >
+          {currentHabits.map(habit => (
+            <span key={habit} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs"
+              style={{ background: 'rgba(61,92,58,0.1)', color: 'var(--hero)' }}>
               {habit}
-              <button
-                onClick={() => toggleHabit(habit)}
-                className="ml-1 hover:text-red-600"
-              >
-                ×
-              </button>
+              <button onClick={() => toggleHabit(habit)} className="ml-1">×</button>
             </span>
           ))}
         </div>
@@ -141,161 +120,126 @@ function HabitSelector({
   )
 }
 
-// Step 1
 function Step1({ answers, update }: StepProps) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Sua rotina básica</h2>
-        <p className="text-sm text-gray-500 mt-1">Conta como é seu dia naturalmente</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Sua rotina básica</h2>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>Conta como é seu dia naturalmente</p>
       </div>
-
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-gray-700">Você é mais produtivo:</label>
-        {['morning', 'evening', 'flexible'].map((option: string) => (
-          <button
-            key={option}
-            onClick={() => update('chronotype', option)}
-            className={`px-4 py-3 rounded-lg border text-sm text-left transition-all ${
-              answers.chronotype === option
-                ? 'border-violet-600 bg-violet-50 text-violet-700'
-                : 'border-gray-200 text-gray-600 hover:border-gray-300'
-            }`}
-          >
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>Você é mais produtivo:</label>
+        {['morning', 'evening', 'flexible'].map(option => (
+          <button key={option} onClick={() => update('chronotype', option)}
+            className="px-4 py-3 rounded-xl border text-sm text-left transition-all"
+            style={answers.chronotype === option
+              ? { borderColor: 'var(--accent)', background: 'rgba(61,92,58,0.06)', color: 'var(--hero)' }
+              : { borderColor: 'var(--border)', color: 'var(--text2)' }
+            }>
             {option === 'morning' && 'De manhã — acordo cedo e rendo mais cedo'}
             {option === 'evening' && 'À noite — sou mais focado no período da tarde/noite'}
             {option === 'flexible' && 'Flexível — não tenho um horário fixo de pico'}
           </button>
         ))}
       </div>
-
       <div className="flex gap-4">
         <div className="flex flex-col gap-1 flex-1">
-          <label className="text-sm font-medium text-gray-700">Que horas acorda?</label>
-          <input
-            type="time"
-            value={answers.wake_time}
-            onChange={(e) => update('wake_time', e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-          />
+          <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>Que horas acorda?</label>
+          <input type="time" value={answers.wake_time} onChange={e => update('wake_time', e.target.value)}
+            className="px-3 py-2 rounded-xl text-sm outline-none"
+            style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
         </div>
         <div className="flex flex-col gap-1 flex-1">
-          <label className="text-sm font-medium text-gray-700">Que horas dorme?</label>
-          <input
-            type="time"
-            value={answers.sleep_time}
-            onChange={(e) => update('sleep_time', e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-          />
+          <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>Que horas dorme?</label>
+          <input type="time" value={answers.sleep_time} onChange={e => update('sleep_time', e.target.value)}
+            className="px-3 py-2 rounded-xl text-sm outline-none"
+            style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
         </div>
       </div>
     </div>
   )
 }
 
-// Step 2
 function Step2({ answers, update }: StepProps) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Trabalho e estudo</h2>
-        <p className="text-sm text-gray-500 mt-1">O que você faz no seu dia a dia</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Trabalho e estudo</h2>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>O que você faz no seu dia a dia</p>
       </div>
-
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">O que você faz? (trabalho/área)</label>
-        <input
-          type="text"
-          placeholder="Ex: desenvolvedor, estudante de medicina, designer..."
-          value={answers.work_type}
-          onChange={(e) => update('work_type', e.target.value)}
-          className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-        />
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>O que você faz?</label>
+        <input type="text" placeholder="Ex: desenvolvedor, estudante, designer..."
+          value={answers.work_type} onChange={e => update('work_type', e.target.value)}
+          className="px-3 py-2 rounded-xl text-sm outline-none"
+          style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
       </div>
-
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Quantas horas por dia você trabalha ou estuda?</label>
-        {['2-4h', '4-6h', '6-8h', '8h+'].map((option: string) => (
-          <button
-            key={option}
-            onClick={() => update('work_hours', option)}
-            className={`px-4 py-3 rounded-lg border text-sm text-left transition-all ${
-              answers.work_hours === option
-                ? 'border-violet-600 bg-violet-50 text-violet-700'
-                : 'border-gray-200 text-gray-600 hover:border-gray-300'
-            }`}
-          >
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>Horas de trabalho/estudo por dia:</label>
+        {['2-4h', '4-6h', '6-8h', '8h+'].map(option => (
+          <button key={option} onClick={() => update('work_hours', option)}
+            className="px-4 py-3 rounded-xl border text-sm text-left transition-all"
+            style={answers.work_hours === option
+              ? { borderColor: 'var(--accent)', background: 'rgba(61,92,58,0.06)', color: 'var(--hero)' }
+              : { borderColor: 'var(--border)', color: 'var(--text2)' }
+            }>
             {option}
           </button>
         ))}
       </div>
-
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Está estudando algo específico?</label>
-        <input
-          type="text"
-          placeholder="Ex: inglês, programação, concurso... (opcional)"
-          value={answers.study_subject}
-          onChange={(e) => update('study_subject', e.target.value)}
-          className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-violet-500"
-        />
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>Estudando algo específico? (opcional)</label>
+        <input type="text" placeholder="Ex: inglês, programação, concurso..."
+          value={answers.study_subject} onChange={e => update('study_subject', e.target.value)}
+          className="px-3 py-2 rounded-xl text-sm outline-none"
+          style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
       </div>
     </div>
   )
 }
 
-// Step 3
 function Step3({ answers, update }: StepProps) {
   const killers = ['Redes sociais', 'Celular', 'Procrastinação', 'Barulho', 'Desorganização', 'Cansaço']
   const boosters = ['Música', 'Silêncio', 'Pomodoro', 'Listas de tarefas', 'Exercício antes', 'Café']
 
   function toggle(field: string, value: string, current: string[]) {
-    if (current.includes(value)) {
-      update(field, current.filter((v: string) => v !== value))
-    } else {
-      update(field, [...current, value])
-    }
+    update(field, current.includes(value)
+      ? current.filter(v => v !== value)
+      : [...current, value]
+    )
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Sua produtividade</h2>
-        <p className="text-sm text-gray-500 mt-1">O que te atrapalha e o que te ajuda</p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Sua produtividade</h2>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>O que te atrapalha e o que te ajuda</p>
       </div>
-
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-gray-700">O que mais acaba com sua produtividade?</label>
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>O que mais acaba com sua produtividade?</label>
         <div className="flex flex-wrap gap-2">
-          {killers.map((item: string) => (
-            <button
-              key={item}
-              onClick={() => toggle('productivity_killers', item, answers.productivity_killers)}
-              className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
-                answers.productivity_killers.includes(item)
-                  ? 'border-red-400 bg-red-50 text-red-600'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}
-            >
+          {killers.map(item => (
+            <button key={item} onClick={() => toggle('productivity_killers', item, answers.productivity_killers)}
+              className="px-3 py-1.5 rounded-full border text-sm transition-all"
+              style={answers.productivity_killers.includes(item)
+                ? { borderColor: '#f87171', background: '#fef2f2', color: '#dc2626' }
+                : { borderColor: 'var(--border)', color: 'var(--text2)' }
+              }>
               {item}
             </button>
           ))}
         </div>
       </div>
-
       <div className="flex flex-col gap-3">
-        <label className="text-sm font-medium text-gray-700">O que te deixa mais produtivo?</label>
+        <label className="text-sm font-medium" style={{ color: 'var(--text2)' }}>O que te deixa mais produtivo?</label>
         <div className="flex flex-wrap gap-2">
-          {boosters.map((item: string) => (
-            <button
-              key={item}
-              onClick={() => toggle('productivity_boosters', item, answers.productivity_boosters)}
-              className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
-                answers.productivity_boosters.includes(item)
-                  ? 'border-violet-600 bg-violet-50 text-violet-700'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}
-            >
+          {boosters.map(item => (
+            <button key={item} onClick={() => toggle('productivity_boosters', item, answers.productivity_boosters)}
+              className="px-3 py-1.5 rounded-full border text-sm transition-all"
+              style={answers.productivity_boosters.includes(item)
+                ? { borderColor: 'var(--accent)', background: 'rgba(61,92,58,0.06)', color: 'var(--hero)' }
+                : { borderColor: 'var(--border)', color: 'var(--text2)' }
+              }>
               {item}
             </button>
           ))}
@@ -305,7 +249,6 @@ function Step3({ answers, update }: StepProps) {
   )
 }
 
-// Step 4
 function Step4({ answers, update }: StepProps) {
   const wellnessAreas = [
     { value: 'physical', label: 'Físico', icon: '💪', desc: 'Exercício, sono, energia' },
@@ -315,132 +258,97 @@ function Step4({ answers, update }: StepProps) {
   ]
 
   function toggleArea(value: string) {
-    const current: string[] = answers.wellness_areas
-    const maxAreas = 4
-    
+    const current = answers.wellness_areas
     if (current.includes(value)) {
-      update('wellness_areas', current.filter((v: string) => v !== value))
+      update('wellness_areas', current.filter(v => v !== value))
       const newHabits = { ...answers.wellness_habits }
       delete newHabits[value]
       update('wellness_habits', newHabits)
-    } else if (current.length < maxAreas) {
+    } else if (current.length < 4) {
       update('wellness_areas', [...current, value])
     } else {
-      alert(`Você pode selecionar até ${maxAreas} áreas`)
+      alert('Você pode selecionar até 4 áreas')
     }
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Wellness</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Escolha até 4 áreas para focar (você definirá hábitos específicos na próxima etapa)
-        </p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Wellness</h2>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>Escolha até 4 áreas para focar</p>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
-        {wellnessAreas.map((area) => {
+        {wellnessAreas.map(area => {
           const isSelected = answers.wellness_areas.includes(area.value)
           return (
-            <button
-              key={area.value}
-              onClick={() => toggleArea(area.value)}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                isSelected
-                  ? 'border-green-500 bg-green-50 ring-2 ring-green-200'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
+            <button key={area.value} onClick={() => toggleArea(area.value)}
+              className="p-4 rounded-xl border text-left transition-all"
+              style={isSelected
+                ? { borderColor: 'var(--accent)', background: 'rgba(61,92,58,0.06)' }
+                : { borderColor: 'var(--border)' }
+              }>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">{area.icon}</span>
-                <span className="font-medium text-gray-900">{area.label}</span>
+                <span className="font-medium" style={{ color: 'var(--text)' }}>{area.label}</span>
               </div>
-              <p className="text-xs text-gray-500">{area.desc}</p>
-              {isSelected && (
-                <span className="inline-block mt-2 text-xs text-green-700 font-medium">
-                  ✓ Selecionado
-                </span>
-              )}
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>{area.desc}</p>
+              {isSelected && <span className="inline-block mt-2 text-xs font-medium" style={{ color: 'var(--accent)' }}>✓ Selecionado</span>}
             </button>
           )
         })}
       </div>
-
-      {answers.wellness_areas.length > 0 && (
-        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-800">
-            💡 Na próxima etapa, você vai definir 2-3 hábitos específicos e mensuráveis 
-            para cada área selecionada. Ex: &apos;Treinar 30min&apos;, &apos;Beber 2L de água&apos;, etc.
-          </p>
-        </div>
-      )}
     </div>
   )
 }
 
-// Step 5
-function Step5({ 
-  answers, 
-  updateWellnessHabit 
-}: { 
+function Step5({
+  answers, updateWellnessHabit
+}: {
   answers: Answers
-  updateWellnessHabit: (area: string, habits: string[]) => void 
+  updateWellnessHabit: (area: string, habits: string[]) => void
 }) {
   const habitSuggestions: Record<string, string[]> = {
     physical: ['Treinar 30 minutos', 'Caminhar 10k passos', 'Dormir 7+ horas', 'Beber 2L de água', 'Alongar 10 minutos'],
-    mental: ['Meditar 10 minutos', 'Ler 15 minutos', 'Escrever 3 coisas de gratidão', 'Fazer pausa a cada 2h'],
-    diet: ['Bater metas de macros', 'Comer 5 refeições balanceadas', 'Zero açúcar refinado', 'Preparar marmita do dia'],
-    hobby: ['Praticar instrumento 20min', 'Desenhar ou pintar', 'Escrever no journal', 'Cozinhar uma receita nova'],
+    mental: ['Meditar 10 minutos', 'Ler 15 minutos', 'Escrever 3 gratidões', 'Fazer pausa a cada 2h'],
+    diet: ['Bater metas de macros', 'Comer 5 refeições balanceadas', 'Zero açúcar refinado', 'Preparar marmita'],
+    hobby: ['Praticar instrumento 20min', 'Desenhar ou pintar', 'Escrever no journal', 'Cozinhar receita nova'],
   }
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Defina seus hábitos</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Para cada área, escolha 2-3 hábitos mensuráveis que você quer construir
-        </p>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Defina seus hábitos</h2>
+        <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>Escolha 2-3 hábitos mensuráveis para cada área</p>
       </div>
-
-      {answers.wellness_areas.map((area: string) => (
+      {answers.wellness_areas.map(area => (
         <HabitSelector
           key={area}
           area={area}
           currentHabits={answers.wellness_habits[area] || []}
           suggestions={habitSuggestions[area] || []}
-          onUpdate={(habits) => updateWellnessHabit(area, habits)}
+          onUpdate={habits => updateWellnessHabit(area, habits)}
         />
       ))}
-
-      <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-        <p className="text-sm text-amber-800">
-          💡 Dica: Escolha hábitos que você consegue medir facilmente. 
-          Em vez de &apos;ser mais saudável&apos;, prefira &apos;beber 2L de água por dia&apos;.
-        </p>
-      </div>
     </div>
   )
 }
 
-// ✅ Componente Principal
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  
-  const [answers, setAnswers] = useState({
+  const [answers, setAnswers] = useState<Answers>({
     chronotype: '',
     wake_time: '',
     sleep_time: '',
     work_type: '',
     work_hours: '',
     study_subject: '',
-    productivity_killers: [] as string[],
-    productivity_boosters: [] as string[],
-    wellness_areas: [] as string[],
-    wellness_habits: {} as Record<string, string[]>,
-    hobbies: [] as string[],
-    focus_areas: [] as string[],
+    productivity_killers: [],
+    productivity_boosters: [],
+    wellness_areas: [],
+    wellness_habits: {},
+    hobbies: [],
+    focus_areas: [],
   })
 
   const router = useRouter()
@@ -453,10 +361,7 @@ export default function OnboardingPage() {
   function updateWellnessHabit(area: string, habits: string[]) {
     setAnswers(prev => ({
       ...prev,
-      wellness_habits: {
-        ...prev.wellness_habits,
-        [area]: habits
-      }
+      wellness_habits: { ...prev.wellness_habits, [area]: habits }
     }))
   }
 
@@ -465,15 +370,6 @@ export default function OnboardingPage() {
       alert('Selecione pelo menos 1 área de wellness para continuar')
       return
     }
-    if (step === 5) {
-      const hasEmptyArea = answers.wellness_areas.some(
-        (area: string) => !answers.wellness_habits[area] || answers.wellness_habits[area].length === 0
-      )
-      if (hasEmptyArea) {
-        alert('Defina pelo menos 1 hábito para cada área selecionada')
-        return
-      }
-    }
     setStep(prev => prev + 1)
   }
 
@@ -481,49 +377,20 @@ export default function OnboardingPage() {
     setStep(prev => prev - 1)
   }
 
-  // ✅ Helper para categorizar hábitos
-  function getCategoryFromHabit(habit: string, area: string): string {
-    const categories: Record<string, Record<string, string>> = {
-      physical: {
-        'treinar': 'exercise', 'academia': 'exercise', 'corrida': 'cardio',
-        'alongar': 'flexibility', 'dormir': 'sleep', 'água': 'hydration', 'hidratação': 'hydration',
-      },
-      mental: {
-        'meditar': 'mindfulness', 'meditação': 'mindfulness', 'ler': 'reading',
-        'leitura': 'reading', 'journal': 'journaling', 'gratidão': 'gratitude',
-        'pausa': 'breaks', 'respirar': 'breathing',
-      },
-      diet: {
-        'macros': 'nutrition', 'proteína': 'nutrition', 'açúcar': 'restriction',
-        'refeições': 'frequency', 'jejum': 'fasting', 'vitaminas': 'supplements',
-      },
-      hobby: {
-        'violão': 'music', 'guitarra': 'music', 'desenhar': 'art', 'pintar': 'art',
-        'jogar': 'gaming', 'cozinhar': 'cooking', 'escrever': 'writing',
-      }
-    }
-    const habitLower = habit.toLowerCase()
-    return categories[area]?.[habitLower] || 'custom'
-  }
-
-  // ✅ handleFinish corrigido
   async function handleFinish() {
     setLoading(true)
+    console.log('1. iniciou')
 
-    const hobbies = answers.hobbies.filter((h: string) => h.trim() !== '')
-    const killers = answers.productivity_killers.filter((k: string) => k.trim() !== '')
-    const focus = answers.focus_areas.filter((f: string) => f.trim() !== '')
+    const hobbies = answers.hobbies.filter(h => h.trim() !== '')
+    const killers = answers.productivity_killers.filter(k => k.trim() !== '')
+    const focus = answers.focus_areas.filter(f => f.trim() !== '')
 
     const { data: { user } } = await supabase.auth.getUser()
-      
-    // ✅ CORREÇÃO: braces para early return
-    if (!user) {
-      setLoading(false)
-      return
-    }
+    console.log('2. user:', user?.id)
 
-    // 1️⃣ Salva o perfil
-    await supabase.from('profiles').upsert({
+    if (!user) { setLoading(false); return }
+
+    const { error: profileError } = await supabase.from('profiles').upsert({
       user_id: user.id,
       chronotype: answers.chronotype || 'flexible',
       work_type: answers.work_type.trim() || 'não informado',
@@ -534,93 +401,109 @@ export default function OnboardingPage() {
       wellness_areas: answers.wellness_areas,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' })
+    console.log('3. profileError:', profileError)
 
-    // 2️⃣ Salva hábitos de wellness
     const wellnessHabitsToInsert = Object.entries(answers.wellness_habits).flatMap(
-      ([area, habits]: [string, string[]]) => 
-        habits
-          .filter((h: string) => h.trim() !== '')
-          .map((habit: string) => ({
-            user_id: user.id,
-            area,
-            title: habit.trim(),
-            category: getCategoryFromHabit(habit, area),
-            target_value: 1,
-            is_active: true
-          }))
+      ([area, habits]) => habits
+        .filter(h => h.trim() !== '')
+        .map(habit => ({ user_id: user.id, area, title: habit.trim(), is_active: true }))
     )
+    console.log('4. wellness habits:', wellnessHabitsToInsert)
 
     if (wellnessHabitsToInsert.length > 0) {
-      await supabase.from('wellness_habits').insert(wellnessHabitsToInsert)
-    }
+    const { error: wellnessError } = await supabase.from('wellness_habits').insert(wellnessHabitsToInsert)
+    console.log('5. wellnessError:', wellnessError)
+  }
 
-    // 3️⃣ Chama IA para gerar rotina
-    const response = await fetch('/api/generate-routine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chronotype: answers.chronotype,
-        wake_time: answers.wake_time,
-        sleep_time: answers.sleep_time,
-        work_type: answers.work_type,
-        work_hours: answers.work_hours,
-        study_subject: answers.study_subject,
-        productivity_killers: killers,
-        productivity_boosters: answers.productivity_boosters,
-        wellness_goals: answers.wellness_areas,
-        wellness_habits: answers.wellness_habits,
-        hobbies: hobbies,
-        focus_areas: focus,
-      }),
-    })
-
-    const result = await response.json()
-    const { timeBlocks, error } = result
-
-    if (!error && timeBlocks) {
-      const blocksToInsert = timeBlocks.map((block:  { title: string; category: string; start_time: string; end_time: string; weekdays: number[] }) => ({
-        ...block,
+  // Cria hábitos na tabela habits para aparecer no dashboard
+  const habitsToInsert = Object.entries(answers.wellness_habits).flatMap(
+    ([area, habits]) => habits
+      .filter(h => h.trim() !== '')
+      .map(habit => ({
         user_id: user.id,
-        is_base_routine: true,
+        title: habit.trim(),
+        category: area,
+        frequency: 'daily',
+        is_active: true
       }))
-      await supabase.from('time_blocks').insert(blocksToInsert)
+  )
+
+  if (habitsToInsert.length > 0) {
+    const { error: habitsError } = await supabase.from('habits').insert(habitsToInsert)
+    console.log('5b. habitsError:', habitsError)
+  }
+
+  console.log('6. chamando IA...')
+    try {
+      const response = await fetch('/api/generate-routine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chronotype: answers.chronotype,
+          wake_time: answers.wake_time,
+          sleep_time: answers.sleep_time,
+          work_type: answers.work_type,
+          work_hours: answers.work_hours,
+          study_subject: answers.study_subject,
+          productivity_killers: killers,
+          productivity_boosters: answers.productivity_boosters,
+          wellness_goals: answers.wellness_areas,
+          wellness_habits: answers.wellness_habits,
+          hobbies: hobbies,
+          focus_areas: focus,
+        }),
+      })
+      const result = await response.json()
+      console.log('7. resultado IA:', result)
+
+      if (!result.error && result.timeBlocks) {
+        const blocksToInsert = result.timeBlocks.map((block: {
+          title: string; category: string; start_time: string; end_time: string; weekdays: number[]
+        }) => ({ ...block, user_id: user.id, is_base_routine: true }))
+        const { error: blocksError } = await supabase.from('time_blocks').insert(blocksToInsert)
+        console.log('8. blocksError:', blocksError)
+      }
+    } catch (err) {
+      console.log('ERRO na IA:', err)
     }
 
+    console.log('9. redirecionando...')
     router.replace('/dashboard')
     setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-lg px-6 py-10">
 
-        {/* Barra de progresso */}
+        <div className="mb-2">
+          <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>flow.</p>
+        </div>
+
         <div className="mb-8">
-          <div className="flex justify-between text-xs text-gray-400 mb-2">
+          <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text3)' }}>
             <span>Etapa {step} de {TOTAL_STEPS}</span>
             <span>{Math.round((step / TOTAL_STEPS) * 100)}%</span>
           </div>
-          <div className="w-full h-1.5 bg-gray-200 rounded-full">
+          <div className="w-full h-1.5 rounded-full" style={{ background: 'var(--border)' }}>
             <div
-              className="h-1.5 bg-violet-600 rounded-full transition-all duration-500"
-              style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+              className="h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${(step / TOTAL_STEPS) * 100}%`, background: 'var(--hero)' }}
             />
           </div>
         </div>
 
-        {/* Etapas */}
         {step === 1 && <Step1 answers={answers} update={update} />}
         {step === 2 && <Step2 answers={answers} update={update} />}
         {step === 3 && <Step3 answers={answers} update={update} />}
         {step === 4 && <Step4 answers={answers} update={update} />}
         {step === 5 && <Step5 answers={answers} updateWellnessHabit={updateWellnessHabit} />}
 
-        {/* Navegação */}
         <div className="flex justify-between mt-8">
           {step > 1 ? (
             <Button variant="ghost" onClick={prevStep}>Voltar</Button>
           ) : <div />}
-          
+
           {step < TOTAL_STEPS ? (
             <Button onClick={nextStep}>Continuar</Button>
           ) : (
@@ -633,4 +516,4 @@ export default function OnboardingPage() {
       </div>
     </div>
   )
-} 
+}

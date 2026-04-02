@@ -29,6 +29,11 @@ export default async function DashboardPage() {
     supabase.from('profiles').select('*').eq('user_id', user.id).single(),
   ])
 
+  // Redireciona para onboarding se perfil não está completo
+  if (!profile || !profile.chronotype) {
+    redirect('/onboarding')
+  }
+
   const now = today.toTimeString().slice(0, 5)
   const blocksWithStatus = (timeBlocks ?? []).map(block => ({
     ...block,
@@ -46,7 +51,6 @@ export default async function DashboardPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
 
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
           {greeting} 👋
@@ -56,7 +60,6 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Hero — bloco atual */}
       {currentBlock && (
         <div className="rounded-2xl p-6 mb-6 flex items-center justify-between" style={{ background: 'var(--hero)' }}>
           <div>
@@ -74,13 +77,10 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Check-in IA */}
       <CheckIn currentBlock={currentBlock ?? null} profile={profile ?? null} />
 
-      {/* Grade de 3 colunas */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-        {/* Coluna 1 — Rotina */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text3)' }}>
             Rotina de hoje
@@ -88,7 +88,6 @@ export default async function DashboardPage() {
           <TimeBlockList blocks={blocksWithStatus} />
         </div>
 
-        {/* Coluna 2 — Hábitos */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-baseline justify-between mb-4">
             <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--text3)' }}>
@@ -106,11 +105,7 @@ export default async function DashboardPage() {
           />
         </div>
 
-        {/* Coluna 3 — Tarefas */}
         <div className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text3)' }}>
-            Pendências
-          </p>
           <TaskList tasks={tasks ?? []} userId={user.id} />
         </div>
 
